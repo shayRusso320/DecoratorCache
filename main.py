@@ -1,4 +1,5 @@
 import pickle
+
 cache = {}
 
 
@@ -12,18 +13,22 @@ def load_obj(name):
         return pickle.load(f)
 
 
+def cache_decorator(func):
+
+    def inner(parameters):
+
+        if parameters not in cache.keys():  # check if the function is called with these parameters for the first time
+            cache[parameters] = func(parameters)  # saving the result in the cache
+
+        return cache.get(parameters)
+
+    return inner
+
+
+@cache_decorator
 def heavy_function(parameters):
     print("called")
     return 1
-
-
-def call_function(parameters):
-    # check if the function is called with these parameters for the first time
-    if parameters not in cache.keys():
-        # saving the result in the cache
-        cache[parameters] = heavy_function(parameters)
-
-    return cache[parameters]
 
 
 # loading the cache from recent runs
@@ -32,10 +37,10 @@ try:
 except EOFError:
     cache = {}
 
-print(call_function(4))
-print(call_function(4))
-print(call_function(3))
-print(call_function(2))
+print(heavy_function(4))
+print(heavy_function(4))
+print(heavy_function(3))
+print(heavy_function(2))
 
 # saving the cache into the file, for use in future runs
 save_obj(cache, "cache")
